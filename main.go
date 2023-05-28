@@ -86,8 +86,8 @@ func main() {
 						}
 						for _, o := range ordersModel {
 							tyd := o.CreatedAt
-							timestamp := time.Unix(tyd/1000, 0)
-							fmt.Printf("ID: %s Symbol: %s Side: %s Price: %s Size: %s Type: %s Time: %s\n", o.Id, o.Symbol, o.Side, o.Price, o.Size, o.Type, timestamp.Format("15:04 02/01/2006"))
+							timestamp := time.Unix(tyd/1000, tyd%1000*1000000)
+							fmt.Printf("ID: %s Symbol: %s Side: %s Price: %s Size: %s Type: %s Time: %s\n", o.Id, o.Symbol, o.Side, o.Price, o.Size, o.Type, timestamp.Format("15:04:05.999 02/01/2006"))
 						}
 					} else {
 						orders, err := client.GetFilledHFOrders(symbol)
@@ -106,10 +106,9 @@ func main() {
 						}
 						for _, o := range ordersModel.Items {
 							tyd := o.CreatedAt
-							// convert from unix to hh:mm dd/mm/yyyy
-							timestamp := time.Unix(tyd/1000, 0)
-							fmt.Printf("ID: %s Symbol: %s Side: %s Price: %s Size: %s Type: %s Time: %s\n", o.Id, o.Symbol, o.Side, o.Price, o.Size, o.Type, timestamp.Format("15:04 02/01/2006"))
-							//fmt.Printf("ID: %s Symbol: %s Side: %s Price: %s Size: %s Type: %s\n", o.Id, o.Symbol, o.Side, o.Price, o.Size, o.Type)
+							// convert unix time to hh:mm:ss.000 dd/mm/yyyy
+							timestamp := time.Unix(tyd/1000, tyd%1000*1000000)
+							fmt.Printf("ID: %s Symbol: %s Side: %s Price: %s Size: %s Type: %s Time: %s\n", o.Id, o.Symbol, o.Side, o.Price, o.Size, o.Type, timestamp.Format("15:04:05.999 02/01/2006"))
 						}
 					}
 					return nil
