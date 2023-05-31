@@ -28,6 +28,25 @@ func main() {
 	client := kucoin.NewClient(cfg.ApiKey, cfg.ApiSecret, cfg.ApiPassphrase)
 
 	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "config",
+				Value:    "config.yml",
+				Usage:    "config file to use",
+				Required: false,
+				Action: func(cCtx *cli.Context, value string) error {
+					cfg, err := config.LoadConfig(value)
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+					}
+					client = kucoin.NewClient(cfg.ApiKey, cfg.ApiSecret, cfg.ApiPassphrase)
+					return nil
+
+				},
+			},
+		},
+
 		Commands: []*cli.Command{
 			{
 				Name:    "accounts",
