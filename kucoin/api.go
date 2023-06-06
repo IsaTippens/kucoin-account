@@ -1,6 +1,9 @@
 package kucoin
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/valyala/fasthttp"
 )
@@ -69,18 +72,37 @@ type FilledHFOrder struct {
 
 type ActiveHFOrders []Order
 
-func (c Client) GetFilledHFOrders(symbol string) (*KucoinResponse, error) {
+type OrdersRequest struct {
+	Symbol	string
+	StartDate	time.Time
+	EndDate		time.Time
+}
+
+func convert_date_to_ms_str(date time.Time) (string) {
+	// subtract 2 hours
+	date = date.Add(-2 * time.Hour)
+	return strconv.FormatInt(date.UnixMilli(), 10)
+}
+
+func (c Client) GetFilledHFOrders(orders OrdersRequest) (*KucoinResponse, error) {
 	params := map[string]string{
-		"symbol": symbol,
+		"symbol": orders.Symbol,
 		"limit":  "100",
+	}
+	if !orders.StartDate.IsZero() {
+		params["startAt"] = convert_date_to_ms_str(orders.StartDate)
+	}
+	if !orders.EndDate.IsZero() {
+		params["endAt"] = convert_date_to_ms_str(orders.EndDate)
 	}
 	req := NewRequest(fasthttp.MethodGet, "/api/v1/hf/orders/done", params, nil)
 	return c.Do(&req)
 }
 
-func (c Client) GetActiveHFOrders(symbol string) (*KucoinResponse, error) {
+func (c Client) GetActiveHFOrders(orders OrdersRequest) (*KucoinResponse, error) {
 	params := map[string]string{
-		"symbol": symbol,
+		"symbol": orders.Symbol,
+		"limit":  "100",
 	}
 	req := NewRequest(fasthttp.MethodGet, "/api/v1/hf/orders/active", params, nil)
 	return c.Do(&req)

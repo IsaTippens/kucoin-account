@@ -84,12 +84,56 @@ func main() {
 						Usage:    "coin pair to fetch orders for",
 						Required: true,
 					},
+					&cli.StringFlag{
+						Name:     "startDate",
+						Value:    "",
+						Usage:    "start date for orders",
+						Required: false,
+					},
+					&cli.StringFlag{
+						Name:     "endDate",
+						Value:    "",
+						Usage:    "end date for orders",
+						Required: false,
+					},
 				},
 				Action: func(cCtx *cli.Context) error {
 					active := cCtx.Bool("active")
 					symbol := cCtx.String("symbol")
+					startDate := cCtx.String("startDate")
+					endDate := cCtx.String("endDate")
+
+					or := kucoin.OrdersRequest{
+						Symbol: symbol,
+					}
+
+					// parse dates
+					date_parse := func(s string) (time.Time) {
+						// yyyy-mm-dd hh:mm:ss.000
+						var t time.Time
+						var err error
+						if len(s) == 10{
+							t, err = time.Parse("2006-01-02", s)
+						} else if len(s) == 19 {
+							t, err = time.Parse("2006-01-02 15:04:05", s)
+						} else {
+							t, err = time.Parse("2006-01-02 15:04:05.000", s)
+						}
+						if err != nil {
+							fmt.Println(err)
+							os.Exit(1)	
+						}
+						return t
+					}
+					if startDate != "" {
+						or.StartDate = date_parse(startDate)
+					}
+					if endDate != "" {
+						or.EndDate = date_parse(endDate)
+					}
+
 					if active {
-						orders, err := client.GetActiveHFOrders(symbol)
+						orders, err := client.GetActiveHFOrders(or)
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)
@@ -109,7 +153,7 @@ func main() {
 							fmt.Printf("ID: %s Symbol: %s Side: %s Price: %s Size: %s Type: %s Time: %s\n", o.Id, o.Symbol, o.Side, o.Price, o.Size, o.Type, timestamp.Format("15:04:05.999 02/01/2006"))
 						}
 					} else {
-						orders, err := client.GetFilledHFOrders(symbol)
+						orders, err := client.GetFilledHFOrders(or)
 						if err != nil {
 							fmt.Println(err)
 							os.Exit(1)
