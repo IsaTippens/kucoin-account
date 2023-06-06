@@ -47,24 +47,24 @@ func (c Client) GetAccounts() (*KucoinResponse, error) {
 }
 
 type Order struct {
-	Id 		  string `json:"id"`
-	Symbol    string `json:"symbol"`
-	OpType    string `json:"opType"`
-	Type      string `json:"type"`
-	Side      string `json:"side"`
-	Price     string `json:"price"`
-	Size      string `json:"size"`
-	Funds	 string `json:"funds"`
-	DealFunds string `json:"dealFunds"`
-	DealSize  string `json:"dealSize"`
-	Fee       string `json:"fee"`
+	Id          string `json:"id"`
+	Symbol      string `json:"symbol"`
+	OpType      string `json:"opType"`
+	Type        string `json:"type"`
+	Side        string `json:"side"`
+	Price       string `json:"price"`
+	Size        string `json:"size"`
+	Funds       string `json:"funds"`
+	DealFunds   string `json:"dealFunds"`
+	DealSize    string `json:"dealSize"`
+	Fee         string `json:"fee"`
 	FeeCurrency string `json:"feeCurrency"`
-	CreatedAt int64  `json:"createdAt"`
+	CreatedAt   int64  `json:"createdAt"`
 }
 
 type FilledHFOrder struct {
-	LastId int64 `json:"lastId"`
-	Items []Order `json:"items"`
+	LastId int64   `json:"lastId"`
+	Items  []Order `json:"items"`
 }
 
 type ActiveHFOrders []Order
@@ -72,6 +72,7 @@ type ActiveHFOrders []Order
 func (c Client) GetFilledHFOrders(symbol string) (*KucoinResponse, error) {
 	params := map[string]string{
 		"symbol": symbol,
+		"limit":  "100",
 	}
 	req := NewRequest(fasthttp.MethodGet, "/api/v1/hf/orders/done", params, nil)
 	return c.Do(&req)
