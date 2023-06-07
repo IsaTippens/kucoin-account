@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -108,11 +110,11 @@ func main() {
 					}
 
 					// parse dates
-					date_parse := func(s string) (time.Time) {
+					date_parse := func(s string) time.Time {
 						// yyyy-mm-dd hh:mm:ss.000
 						var t time.Time
 						var err error
-						if len(s) == 10{
+						if len(s) == 10 {
 							t, err = time.Parse("2006-01-02", s)
 						} else if len(s) == 19 {
 							t, err = time.Parse("2006-01-02 15:04:05", s)
@@ -121,7 +123,7 @@ func main() {
 						}
 						if err != nil {
 							fmt.Println(err)
-							os.Exit(1)	
+							os.Exit(1)
 						}
 						return t
 					}
@@ -159,6 +161,7 @@ func main() {
 							os.Exit(1)
 						}
 						ordersModel := kucoin.FilledHFOrder{}
+
 						if err := orders.Unmarshal(&ordersModel); err != nil {
 							fmt.Println(err)
 							os.Exit(1)
@@ -171,9 +174,33 @@ func main() {
 							tyd := o.CreatedAt
 							// convert unix time to hh:mm:ss.000 dd/mm/yyyy
 							timestamp := time.Unix(tyd/1000, tyd%1000*1000000)
-							fmt.Printf("ID: %s Symbol: %s Side: %s Price: %s Size: %s Type: %s Time: %s\n", o.Id, o.Symbol, o.Side, o.Price, o.Size, o.Type, timestamp.Format("15:04:05.999 02/01/2006"))
+							dealFunds := o.DealFunds
+							dealSize := o.DealSize
+							// convert to float
+							dealFundsFloat, _ := strconv.ParseFloat(dealFunds, 64)
+							dealSizeFloat, _ := strconv.ParseFloat(dealSize, 64)
+							price := dealFundsFloat / dealSizeFloat
+							fmt.Printf("ID: %s Symbol: %s Side: %s Price: %.8f Size: %s Type: %s Time: %s\n", o.Id, o.Symbol, o.Side, price, o.Size, o.Type, timestamp.Format("15:04:05.999 02/01/2006"))
 						}
 					}
+					return nil
+				},
+			},
+			{
+				Name: "fills",
+				Action: func(cCtx *cli.Context) error {
+					fills, err := client.GetFills()
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+					}
+					// unmarschal to string
+					j, err := json.Marshal(fills.Data)
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+					}
+					fmt.Println(string(j))
 					return nil
 				},
 			},

@@ -107,3 +107,11 @@ func (c Client) GetActiveHFOrders(orders OrdersRequest) (*KucoinResponse, error)
 	req := NewRequest(fasthttp.MethodGet, "/api/v1/hf/orders/active", params, nil)
 	return c.Do(&req)
 }
+
+func (c Client) GetFills() (*KucoinResponse, error) {
+	params := map[string]string{
+		"tradeType": "TRADE_HF",
+	}
+	req := NewRequest(fasthttp.MethodGet, "/api/v1/fills", params, nil)
+	return c.Do(&req)
+}
